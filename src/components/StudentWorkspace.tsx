@@ -307,6 +307,7 @@ export function StudentWorkspace({
           stageTitle={stage.shortTitle}
           rewardBadge={stage.rewardBadge}
           xp={state.xp}
+          completedStages={state.completedStages}
           completedBonusQuests={state.completedBonusQuests}
           onCompleteBonusQuest={onCompleteBonusQuest}
           onReturnToStage={() => setWaitingStageId(null)}
@@ -433,7 +434,12 @@ export function StudentWorkspace({
                 <button
                   type="button"
                   onClick={handlePrimaryComplete}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-[#F4C914] hover:bg-amber-400 text-[#26313B] font-extrabold text-sm shadow-sm transition-colors cursor-pointer whitespace-nowrap"
+                  disabled={!requirement.ready}
+                  className={`inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-extrabold text-sm shadow-sm transition-colors whitespace-nowrap ${
+                    requirement.ready
+                      ? 'bg-[#F4C914] hover:bg-amber-400 text-[#26313B] cursor-pointer'
+                      : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                  }`}
                 >
                   <Check className="w-4 h-4" />
                   <span>{isCurrentDone ? 'Все 10 ключей собраны!' : 'Завершить приключение (+10 XP)'}</span>

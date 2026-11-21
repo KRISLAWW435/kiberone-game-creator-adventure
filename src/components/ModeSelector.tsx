@@ -15,7 +15,7 @@ import { useState } from 'react';
 import type { AppMode } from '../types/lesson';
 import { GuideMascot } from './common/GuideMascot';
 import { HeroLabIllustration } from './common/LabIllustrations';
-import { LevelMapModal } from './common/ProgressModals';
+import { AchievementsModal, LevelMapModal } from './common/ProgressModals';
 
 interface ModeSelectorProps {
   hasSavedProgress: boolean;
@@ -24,6 +24,10 @@ interface ModeSelectorProps {
   maxUnlockedStage: number;
   xp: number;
   unlockedKeysCount: number;
+  unlockedKeys?: string[];
+  earnedAchievements?: string[];
+  openedChests?: string[];
+  claimedStickers?: string[];
   onSelectMode: (mode: AppMode) => void;
   onJumpToStage: (stageId: number) => void;
   onResetProgress: () => void;
@@ -36,12 +40,20 @@ export function ModeSelector({
   maxUnlockedStage,
   xp,
   unlockedKeysCount,
+  unlockedKeys = [],
+  earnedAchievements = [],
+  openedChests = [],
+  claimedStickers = [],
   onSelectMode,
   onJumpToStage,
   onResetProgress,
 }: ModeSelectorProps) {
   const [confirmReset, setConfirmReset] = useState(false);
   const [showMap, setShowMap] = useState(false);
+  const [showAchievements, setShowAchievements] = useState(false);
+
+  const isCompletedProject = hasSavedProgress && completedStages.length >= 10;
+  const isSavedInProgress = hasSavedProgress && !isCompletedProject;
 
   return (
     <main className="max-w-[1260px] mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6">
@@ -69,12 +81,24 @@ export function ModeSelector({
               </span>
             </div>
 
+            {!hasSavedProgress && (
+              <p className="text-sm sm:text-base font-extrabold text-[#04959A]">
+                Привет, будущий разработчик!
+              </p>
+            )}
+
             <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-extrabold text-[#26313B] tracking-tight leading-[1.12] text-balance">
               KIBERONE <span className="text-[#06B8BE]">GAME CREATOR</span> ADVENTURE
             </h1>
 
             <p className="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl">
-              {hasSavedProgress ? (
+              {isCompletedProject ? (
+                <>
+                  Все 10 этапов успешно пройдены! Ты создал{' '}
+                  <strong className="text-[#26313B]">собственную визуальную новеллу на Python и Pygame</strong> и собрал
+                  полную коллекцию наград.
+                </>
+              ) : isSavedInProgress ? (
                 <>
                   Твой проект уже ждёт! Возвращайся в студию, открой сундуки наград и доведи{' '}
                   <strong className="text-[#26313B]">собственную визуальную новеллу на Python и Pygame</strong> до
@@ -89,15 +113,27 @@ export function ModeSelector({
               )}
             </p>
 
-            {/* Saved Progress Card — ONLY rendered in State B (Сохранённый проект) */}
+            {/* Saved Progress Card — ONLY when saved progress exists (in-progress or completed) */}
             {hasSavedProgress && (
-              <div className="rounded-2xl bg-gradient-to-r from-cyan-50/80 to-amber-50/70 border border-[#06B8BE]/40 p-4 flex flex-wrap items-center justify-between gap-4">
+              <div
+                className={`rounded-2xl border p-4 flex flex-wrap items-center justify-between gap-4 ${
+                  isCompletedProject
+                    ? 'bg-gradient-to-r from-emerald-50/90 to-amber-50/80 border-emerald-300'
+                    : 'bg-gradient-to-r from-cyan-50/80 to-amber-50/70 border-[#06B8BE]/40'
+                }`}
+              >
                 <div>
-                  <p className="text-[11px] font-extrabold uppercase tracking-wider text-[#04959A]">
-                    Сохранённое приключение
+                  <p
+                    className={`text-[11px] font-extrabold uppercase tracking-wider ${
+                      isCompletedProject ? 'text-emerald-700' : 'text-[#04959A]'
+                    }`}
+                  >
+                    {isCompletedProject ? 'Приключение завершено!' : 'Сохранённое приключение'}
                   </p>
                   <p className="text-base font-extrabold text-[#26313B] mt-0.5 tabular-nums">
-                    Текущий этап: {currentStage} из 10
+                    {isCompletedProject
+                      ? 'Пройдено этапов: 10 из 10'
+                      : `Текущий этап: ${currentStage} из 10`}
                   </p>
                 </div>
 
@@ -115,11 +151,13 @@ export function ModeSelector({
             )}
 
             <GuideMascot
-              emotion={hasSavedProgress ? 'joy' : 'support'}
+              emotion={isCompletedProject ? 'victory' : isSavedInProgress ? 'joy' : 'support'}
               message={
-                hasSavedProgress
+                isCompletedProject
+                  ? `Поздравляю с релизом игры! У тебя ${xp} XP, ${unlockedKeysCount} ключей и ${earnedAchievements.length} достижений. Можешь посмотреть награды или начать новую игру!`
+                  : isSavedInProgress
                   ? `С возвращением! Ты остановился на этапе ${currentStage} из 10. У тебя уже ${xp} XP и ${unlockedKeysCount} ключей — продолжим создавать твою игру!`
-                  : 'Привет! Я КиберБот. Мы вместе пройдём 10 этапов от идеи до настоящей игры на Python! Жми «Начать приключение», и погнали!'
+                  : 'Привет, будущий разработчик! Я КиберБот. Мы вместе пройдём 10 этапов от идеи до настоящей игры на Python! Жми «Начать приключение», и погнали!'
               }
             />
           </div>
@@ -127,14 +165,48 @@ export function ModeSelector({
           {/* Primary Launch Actions */}
           <div className="pt-6 mt-6 border-t border-slate-100 space-y-3">
             <div className="flex flex-wrap items-center gap-3">
-              {hasSavedProgress ? (
+              {isCompletedProject ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setShowAchievements(true)}
+                    className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl bg-[#F4C914] hover:bg-amber-400 text-[#26313B] font-extrabold text-sm sm:text-base shadow-sm transition-all cursor-pointer whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F4C914]"
+                  >
+                    <Trophy className="w-5 h-5" />
+                    <span>Посмотреть достижения</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onJumpToStage(10);
+                      onSelectMode('student');
+                    }}
+                    className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-[#06B8BE] hover:bg-[#04959A] text-white font-extrabold text-sm transition-colors cursor-pointer whitespace-nowrap shrink-0"
+                  >
+                    <span>Грамота и проект</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+
+                  {!confirmReset && (
+                    <button
+                      type="button"
+                      onClick={() => setConfirmReset(true)}
+                      className="inline-flex items-center gap-2 px-4 py-3.5 rounded-2xl border border-slate-200 bg-white hover:bg-rose-50 hover:border-rose-300 text-[#26313B] font-bold text-xs sm:text-sm transition-colors cursor-pointer whitespace-nowrap shrink-0"
+                    >
+                      <RotateCcw className="w-4 h-4 text-rose-500" />
+                      <span>Начать новую игру</span>
+                    </button>
+                  )}
+                </>
+              ) : isSavedInProgress ? (
                 <>
                   <button
                     type="button"
                     onClick={() => onSelectMode('student')}
                     className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl bg-[#06B8BE] hover:bg-[#04959A] text-white font-extrabold text-sm sm:text-base shadow-md shadow-[#06B8BE]/25 transition-all cursor-pointer whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#06B8BE]"
                   >
-                    <span>Продолжить приключение</span>
+                    <span>Продолжить</span>
                     <ArrowRight className="w-5 h-5" />
                   </button>
 
@@ -254,12 +326,22 @@ export function ModeSelector({
         currentStage={currentStage}
         completedStages={completedStages}
         maxUnlockedStage={maxUnlockedStage}
+        openedChests={openedChests}
         onSelectStage={(stageId) => {
           onJumpToStage(stageId);
           onSelectMode('student');
         }}
       />
+
+      <AchievementsModal
+        open={showAchievements}
+        onClose={() => setShowAchievements(false)}
+        xp={xp}
+        earnedIds={earnedAchievements}
+        unlockedKeys={unlockedKeys}
+        openedChests={openedChests}
+        claimedStickers={claimedStickers}
+      />
     </main>
   );
 }
-

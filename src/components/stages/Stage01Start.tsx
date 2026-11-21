@@ -4,6 +4,7 @@ import {
   Code2,
   GitBranch,
   HelpCircle,
+  Lock,
   MessageSquare,
   Play,
   Sparkles,
@@ -46,7 +47,7 @@ const CONCEPT_STEPS: ConceptStep[] = [
     badge: 'Метод работы с ИИ',
     icon: Sparkles,
     shortRule:
-      'Vibe Coding — это создание игры вместе с нейросетью: ты придумываешь идею, логику и проверяешь результат, а ИИ помогает писать код и тексты.',
+      'Vibe Coding — это создание игры вместе с нейросетью: ты придумываешь идею, сюжет и проверяешь результат, а ИИ помогает писать код и тексты.',
     codeExample: '# Твоя идея + точный промпт = игра на Python + Pygame (1000×600)',
     outputPreview: 'Готовая основа для твоей новеллы!',
     question: 'Кто главный в процессе Vibe Coding?',
@@ -78,16 +79,16 @@ const CONCEPT_STEPS: ConceptStep[] = [
     badge: 'Именованный контейнер',
     icon: Box,
     shortRule:
-      'Переменная — это подписанный контейнер (ящик) в памяти компьютера, в который мы кладём имя героя, энергию или выбор игрока, чтобы использовать дальше.',
-    codeExample: 'hero = "Алина"\nenergy = 100\nprint(hero)',
+      'Переменная — это именованный контейнер (подписанный ящик) в памяти компьютера: у неё есть имя (например, hero) и значение ("Алина"), которое мы храним и выводим на экран.',
+    codeExample: 'hero = "Алина"\nenergy = 100\n\nprint(hero)',
     outputPreview: 'Алина',
-    question: 'Что выведет компьютер после выполнения кода: hero = "Алина" и print(hero)?',
+    question: 'Что выведет компьютер после выполнения кода hero = "Алина" и print(hero)?',
     options: [
       {
         id: 'a',
         label: 'Напечатает слово hero',
         isCorrect: false,
-        feedback: 'Без кавычек print(hero) заглядывает внутрь контейнера с именем hero и берёт его содержимое.',
+        feedback: 'Без кавычек print(hero) заглядывает внутрь контейнера с именем hero и берёт его значение.',
       },
       {
         id: 'b',
@@ -97,9 +98,9 @@ const CONCEPT_STEPS: ConceptStep[] = [
       },
       {
         id: 'c',
-        label: 'Выдаст ошибку, потому что числа не складываются со строками',
+        label: 'Ничего не напечатает, потому что print() не работает с переменными',
         isCorrect: false,
-        feedback: 'Ошибки здесь нет — мы просто сохранили текст в переменную и вывели его на экран.',
+        feedback: 'Как раз наоборот: print(hero) специально создан для вывода значения, которое лежит внутри переменной hero.',
       },
     ],
   },
@@ -142,28 +143,29 @@ const CONCEPT_STEPS: ConceptStep[] = [
     badge: 'Ввод от игрока',
     icon: MessageSquare,
     shortRule:
-      'Команда input() задаёт игроку вопрос, ждёт ответа с клавиатуры и сохраняет введённый текст в переменную.',
+      'Команда input() задаёт вопрос и ждёт ответа с клавиатуры. А слово слева (choice = ...) — это обычное имя переменной («выбор»), а не команда Python: туда сохраняется ответ игрока.',
     codeExample: 'choice = input("Выбери 1 или 2: ")',
-    outputPreview: 'Выбери 1 или 2: 1  → сохранится в choice',
-    question: 'Что делает программа, когда доходит до строки choice = input("Выбери 1 или 2: ")?',
+    outputPreview: 'Введено "1" → в контейнере choice теперь хранится "1"',
+    question: 'Что такое choice в строке choice = input("Выбери 1 или 2: ")?',
     options: [
       {
         id: 'a',
-        label: 'Мгновенно закрывает окно игры',
+        label: 'Специальная секретная команда Pygame для рисования кнопок',
         isCorrect: false,
-        feedback: 'Нет, программа останавливается и ждёт ответа от игрока.',
+        feedback: 'Не-а! choice переводится как «выбор» — это обычное имя переменной, которое придумал программист.',
       },
       {
         id: 'b',
-        label: 'Ждёт ответ игрока с клавиатуры и сохраняет его в переменную choice',
+        label: 'Обычное имя переменной (контейнера), куда сохранится ответ игрока из input()',
         isCorrect: true,
-        feedback: 'Отлично! Введённое значение сохраняется в choice, и дальше мы проверим его условием.',
+        feedback:
+          'Верно! Можно назвать её choice, otvet или knopka. В нашей графической игре на Pygame клики мыши обрабатываются событиями, а input() помогает понять, как выбор сохраняется в переменную.',
       },
       {
         id: 'c',
-        label: 'Рисует фон ночного города',
+        label: 'Команда, которая сразу закрывает окно игры',
         isCorrect: false,
-        feedback: 'input() работает только с текстом и вводом данных.',
+        feedback: 'choice ничего не закрывает — это просто имя контейнера для хранения ответа игрока.',
       },
     ],
   },
@@ -174,23 +176,23 @@ const CONCEPT_STEPS: ConceptStep[] = [
     badge: 'Развилка сюжета',
     icon: GitBranch,
     shortRule:
-      'Условия if / elif / else проверяют, что выбрал игрок, и направляют сюжет либо к Финалу 1, либо к Финалу 2.',
+      'Условия if / elif / else проверяют, что хранится в переменной choice, и выполняют ТОЛЬКО одну подходящую ветку: Финал 1, Финал 2 или подсказку else.',
     codeExample:
       'if choice == "1":\n    print("Финал 1: Тайная дверь открыта!")\nelif choice == "2":\n    print("Финал 2: Включён скрытый лифт!")\nelse:\n    print("Попробуй выбрать 1 или 2")',
     outputPreview: 'Финал 1: Тайная дверь открыта!',
-    question: 'Что случится, если игрок введёт "2" (choice = "2")?',
+    question: 'Что случится, если игрок ввёл "2" (choice = "2")?',
     options: [
       {
         id: 'a',
         label: 'Сработает ветка if и выведется Финал 1',
         isCorrect: false,
-        feedback: 'Условие choice == "1" неверно, поэтому Python проверит следующую ветку elif.',
+        feedback: 'Условие choice == "1" неверно, поэтому Python пропустит первую ветку и проверит elif.',
       },
       {
         id: 'b',
         label: 'Сработает ветка elif и запустится Финал 2',
         isCorrect: true,
-        feedback: 'Точно! Именно так в визуальной новелле работают две разные концовки.',
+        feedback: 'Точно! В конструкции if / elif / else сработает только подходящая ветка elif choice == "2".',
       },
       {
         id: 'c',
@@ -204,6 +206,7 @@ const CONCEPT_STEPS: ConceptStep[] = [
 
 export function Stage01Start({ state, onUpdate }: Stage01StartProps) {
   const [activeIndex, setActiveIndex] = useState<number>(0);
+  const [inputSimValue, setInputSimValue] = useState<'1' | '2'>('1');
   const [simChoice, setSimChoice] = useState<'1' | '2' | 'other'>('1');
 
   const activeStep = CONCEPT_STEPS[activeIndex] || CONCEPT_STEPS[0];
@@ -211,6 +214,11 @@ export function Stage01Start({ state, onUpdate }: Stage01StartProps) {
   const selectedOptId = state.stage1ConceptAnswers?.[activeStep.id] || '';
   const selectedOption = activeStep.options.find((o) => o.id === selectedOptId);
   const isCurrentSolved = checkedSet.has(activeStep.id);
+
+  // Determine the farthest step reachable (cannot skip ahead before answering the current one correctly)
+  const firstUnsolvedIdx = CONCEPT_STEPS.findIndex((s) => !checkedSet.has(s.id));
+  const maxReachableIdx =
+    firstUnsolvedIdx === -1 ? CONCEPT_STEPS.length - 1 : firstUnsolvedIdx;
 
   const handleSelectAnswer = (step: ConceptStep, opt: ConceptOption) => {
     const nextAnswers = {
@@ -229,40 +237,73 @@ export function Stage01Start({ state, onUpdate }: Stage01StartProps) {
     });
   };
 
+  const getIfElseCodeAndBranch = (choiceMode: '1' | '2' | 'other') => {
+    const assigned = choiceMode === '1' ? '"1"' : choiceMode === '2' ? '"2"' : '"9"';
+    const code = `choice = ${assigned}\n\nif choice == "1":\n    print("Финал 1: Тайная дверь открыта!")\nelif choice == "2":\n    print("Финал 2: Включён скрытый лифт!")\nelse:\n    print("Попробуй выбрать 1 или 2")`;
+    const branchLabel =
+      choiceMode === '1'
+        ? 'Сработала ветка if choice == "1"'
+        : choiceMode === '2'
+        ? 'Сработала ветка elif choice == "2"'
+        : 'Сработала ветка else';
+    const output =
+      choiceMode === '1'
+        ? 'Финал 1: Тайная дверь открыта!'
+        : choiceMode === '2'
+        ? 'Финал 2: Включён скрытый лифт!'
+        : 'Попробуй выбрать 1 или 2';
+    return { code, branchLabel, output };
+  };
+
+  const ifElseSim = getIfElseCodeAndBranch(simChoice);
+
   return (
     <div className="space-y-4">
-      {/* 5-Concept Step Navigation Bar */}
+      {/* 5-Concept Step Navigation Bar with clear separated counters */}
       <section className="bg-white border border-slate-200/90 rounded-2xl p-3 shadow-xs space-y-2.5">
         <div className="flex flex-wrap items-center justify-between gap-2 px-1">
           <p className="text-xs font-extrabold text-[#26313B] flex items-center gap-1.5">
             <Code2 className="w-4 h-4 text-[#06B8BE]" />
-            <span>Быстрая разминка (3–4 мин): изучи 5 понятий и ответь на мини-вопрос после каждого</span>
+            <span>Быстрая разминка: изучи 5 понятий и ответь верно на мини-вопрос после каждого</span>
           </p>
-          <span className="px-2.5 py-1 rounded-xl bg-cyan-50 border border-[#06B8BE]/40 text-xs font-extrabold text-[#04959A] tabular-nums">
-            Пройдено: {state.stage1PythonChecked.length} из {CONCEPT_STEPS.length}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="px-2.5 py-1 rounded-xl bg-slate-100 text-xs font-extrabold text-[#26313B] tabular-nums">
+              Шаг {activeStep.order} из {CONCEPT_STEPS.length}
+            </span>
+            <span className="px-2.5 py-1 rounded-xl bg-cyan-50 border border-[#06B8BE]/40 text-xs font-extrabold text-[#04959A] tabular-nums">
+              Верно: {state.stage1PythonChecked.length} из {CONCEPT_STEPS.length}
+            </span>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
           {CONCEPT_STEPS.map((step, idx) => {
             const isActive = idx === activeIndex;
             const isSolved = checkedSet.has(step.id);
+            const isLocked = idx > maxReachableIdx && !isSolved;
             const Icon = step.icon;
             return (
               <button
                 key={step.id}
                 type="button"
-                onClick={() => setActiveIndex(idx)}
-                className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between gap-2 ${
-                  isActive
-                    ? 'bg-[#06B8BE] border-[#06B8BE] text-white shadow-xs'
+                disabled={isLocked}
+                onClick={() => !isLocked && setActiveIndex(idx)}
+                className={`p-2.5 rounded-xl border text-left transition-all flex items-center justify-between gap-2 ${
+                  isLocked
+                    ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-75'
+                    : isActive
+                    ? 'bg-[#06B8BE] border-[#06B8BE] text-white shadow-xs cursor-pointer'
                     : isSolved
-                    ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
-                    : 'bg-slate-50 border-slate-200 text-[#26313B] hover:border-[#06B8BE]'
+                    ? 'bg-emerald-50 border-emerald-300 text-emerald-900 cursor-pointer'
+                    : 'bg-slate-50 border-slate-200 text-[#26313B] hover:border-[#06B8BE] cursor-pointer'
                 }`}
               >
                 <div className="min-w-0 flex items-center gap-1.5">
-                  <Icon className="w-3.5 h-3.5 shrink-0" />
+                  {isLocked ? (
+                    <Lock className="w-3.5 h-3.5 shrink-0" />
+                  ) : (
+                    <Icon className="w-3.5 h-3.5 shrink-0" />
+                  )}
                   <span className="text-xs font-extrabold truncate">{step.title}</span>
                 </div>
                 {isSolved && (
@@ -283,7 +324,7 @@ export function Stage01Start({ state, onUpdate }: Stage01StartProps) {
           <div className="space-y-4">
             <div className="flex items-center justify-between gap-2">
               <span className="text-xs font-extrabold text-[#04959A]">{activeStep.badge}</span>
-              <span className="text-xs font-bold text-slate-400 tabular-nums">
+              <span className="text-xs font-bold text-slate-500 tabular-nums">
                 Шаг {activeStep.order} из {CONCEPT_STEPS.length}
               </span>
             </div>
@@ -295,31 +336,95 @@ export function Stage01Start({ state, onUpdate }: Stage01StartProps) {
             {activeStep.id === 'variable' && (
               <div className="rounded-2xl bg-gradient-to-br from-cyan-50/70 to-amber-50/60 border border-[#06B8BE]/35 p-4 space-y-3">
                 <p className="text-xs font-extrabold text-[#04959A]">
-                  Наглядно: переменная — это подписанный контейнер с данными
+                  Переменная = именованный контейнер в памяти (Имя → Значение)
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="rounded-2xl bg-white border-2 border-[#06B8BE] p-3 shadow-xs">
-                    <span className="inline-block px-2 py-0.5 rounded-md bg-[#06B8BE] text-white font-mono text-[11px] font-bold mb-2">
-                      hero
-                    </span>
+                  <div className="rounded-2xl bg-white border-2 border-[#06B8BE] p-3 shadow-xs space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase">Имя переменной</span>
+                      <span className="inline-block px-2 py-0.5 rounded-md bg-[#06B8BE] text-white font-mono text-[11px] font-bold">
+                        hero
+                      </span>
+                    </div>
                     <div className="rounded-xl bg-cyan-50/70 border border-dashed border-[#06B8BE] p-2.5 text-center">
+                      <p className="text-[10px] font-bold text-slate-500 mb-0.5">Значение:</p>
                       <code className="font-mono text-base font-extrabold text-[#26313B]">&quot;Алина&quot;</code>
                     </div>
                   </div>
 
-                  <div className="rounded-2xl bg-white border-2 border-[#F4C914] p-3 shadow-xs">
-                    <span className="inline-block px-2 py-0.5 rounded-md bg-[#F4C914] text-[#26313B] font-mono text-[11px] font-bold mb-2">
-                      energy
-                    </span>
+                  <div className="rounded-2xl bg-white border-2 border-[#F4C914] p-3 shadow-xs space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase">Имя переменной</span>
+                      <span className="inline-block px-2 py-0.5 rounded-md bg-[#F4C914] text-[#26313B] font-mono text-[11px] font-bold">
+                        energy
+                      </span>
+                    </div>
                     <div className="rounded-xl bg-amber-50/70 border border-dashed border-amber-400 p-2.5 text-center">
+                      <p className="text-[10px] font-bold text-slate-500 mb-0.5">Значение:</p>
                       <code className="font-mono text-base font-extrabold text-[#26313B]">100</code>
                     </div>
                   </div>
                 </div>
                 <div className="rounded-xl bg-[#26313B] text-white px-3.5 py-2 font-mono text-xs flex items-center justify-between gap-2">
                   <span className="text-[#F4C914]">print(hero)</span>
-                  <span className="text-emerald-300 font-bold">→ Алина</span>
+                  <span className="text-emerald-300 font-bold">Результат: Алина</span>
                 </div>
+              </div>
+            )}
+
+            {/* 4-Step Breakdown + Live Container Update for input() */}
+            {activeStep.id === 'input' && (
+              <div className="rounded-2xl bg-gradient-to-br from-cyan-50/70 to-amber-50/55 border border-[#06B8BE]/35 p-4 space-y-3">
+                <p className="text-xs font-extrabold text-[#04959A]">
+                  Как работает строка choice = input(&quot;Выбери 1 или 2: &quot;) по 4 шагам:
+                </p>
+                <ol className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-[#26313B]">
+                  <li className="p-2.5 rounded-xl bg-white border border-slate-200">
+                    <strong>1. Вопрос:</strong> <code className="font-mono text-[#04959A]">input(&quot;...&quot;)</code> показывает подсказку игроку.
+                  </li>
+                  <li className="p-2.5 rounded-xl bg-white border border-slate-200">
+                    <strong>2. Ввод:</strong> программа ждёт, что игрок нажмёт ответ на клавиатуре.
+                  </li>
+                  <li className="p-2.5 rounded-xl bg-white border border-slate-200">
+                    <strong>3. Контейнер:</strong> <code className="font-mono text-[#04959A]">choice</code> — это просто имя переменной («выбор»), а не команда Python.
+                  </li>
+                  <li className="p-2.5 rounded-xl bg-white border border-slate-200">
+                    <strong>4. Сохранение:</strong> ответ игрока кладётся внутрь переменной <code className="font-mono text-[#04959A]">choice</code>.
+                  </li>
+                </ol>
+
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white border border-slate-200 p-3">
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="font-bold text-slate-600">Попробуй ввести:</span>
+                    {(['1', '2'] as const).map((val) => (
+                      <button
+                        key={val}
+                        type="button"
+                        onClick={() => setInputSimValue(val)}
+                        className={`px-3 py-1 rounded-lg font-mono font-extrabold cursor-pointer ${
+                          inputSimValue === val
+                            ? 'bg-[#06B8BE] text-white'
+                            : 'bg-slate-100 text-[#26313B] hover:bg-slate-200'
+                        }`}
+                      >
+                        &quot;{val}&quot;
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-2 font-mono text-xs">
+                    <span className="px-2 py-0.5 rounded bg-[#F4C914] text-[#26313B] font-bold">choice</span>
+                    <span>=</span>
+                    <span className="px-2.5 py-0.5 rounded bg-emerald-50 border border-emerald-300 text-emerald-800 font-extrabold">
+                      &quot;{inputSimValue}&quot;
+                    </span>
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-slate-600 leading-snug">
+                  <strong>Важно для нашей игры:</strong> в графическом окне Pygame клики мышью по кнопкам обрабатываются
+                  через события окна, а пример с <code className="font-mono font-bold">input()</code> помогает понять, как
+                  выбор игрока попадает в переменную!
+                </p>
               </div>
             )}
 
@@ -328,19 +433,19 @@ export function Stage01Start({ state, onUpdate }: Stage01StartProps) {
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-[11px] font-bold text-slate-300">Пример кода на Python:</span>
                 {activeStep.id === 'if_else' && (
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex flex-wrap items-center gap-1.5">
                     {(
                       [
-                        { id: '1', label: 'choice = "1"' },
-                        { id: '2', label: 'choice = "2"' },
-                        { id: 'other', label: 'choice = "9"' },
+                        { id: '1', label: 'Игрок выбрал 1' },
+                        { id: '2', label: 'Игрок выбрал 2' },
+                        { id: 'other', label: 'Игрок ввёл другое значение' },
                       ] as const
                     ).map((btn) => (
                       <button
                         key={btn.id}
                         type="button"
                         onClick={() => setSimChoice(btn.id)}
-                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold cursor-pointer ${
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold cursor-pointer transition-colors ${
                           simChoice === btn.id
                             ? 'bg-[#F4C914] text-[#26313B]'
                             : 'bg-white/10 text-slate-200 hover:bg-white/20'
@@ -354,20 +459,25 @@ export function Stage01Start({ state, onUpdate }: Stage01StartProps) {
               </div>
 
               <pre className="font-mono text-xs sm:text-sm text-[#F4C914] bg-slate-900/75 rounded-xl p-3 overflow-x-auto leading-relaxed">
-                {activeStep.codeExample}
+                {activeStep.id === 'if_else' ? ifElseSim.code : activeStep.codeExample}
               </pre>
 
-              <div className="font-mono text-xs bg-slate-900/80 border border-white/10 rounded-xl p-3 flex items-center gap-2 text-emerald-300">
-                <Play className="w-3.5 h-3.5 text-[#06B8BE] shrink-0" />
-                <span>
-                  {activeStep.id === 'if_else'
-                    ? simChoice === '1'
-                      ? 'Финал 1: Тайная дверь открыта!'
-                      : simChoice === '2'
-                      ? 'Финал 2: Включён скрытый лифт!'
-                      : 'Попробуй выбрать 1 или 2'
-                    : activeStep.outputPreview}
-                </span>
+              <div className="font-mono text-xs bg-slate-900/80 border border-white/10 rounded-xl p-3 flex flex-wrap items-center justify-between gap-2 text-emerald-300">
+                <div className="flex items-center gap-2">
+                  <Play className="w-3.5 h-3.5 text-[#06B8BE] shrink-0" />
+                  <span>
+                    {activeStep.id === 'if_else'
+                      ? ifElseSim.output
+                      : activeStep.id === 'input'
+                      ? `Введено "${inputSimValue}" → в контейнере choice теперь хранится "${inputSimValue}"`
+                      : activeStep.outputPreview}
+                  </span>
+                </div>
+                {activeStep.id === 'if_else' && (
+                  <span className="text-[11px] font-sans font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-200">
+                    {ifElseSim.branchLabel}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -376,9 +486,14 @@ export function Stage01Start({ state, onUpdate }: Stage01StartProps) {
         {/* Right: Single Quick Concept Question (max 3 options) */}
         <section className="lg:col-span-5 bg-white border border-slate-200/90 rounded-3xl p-5 sm:p-6 flex flex-col justify-between gap-4 shadow-xs">
           <div className="space-y-4">
-            <div className="flex items-center gap-2 text-xs font-extrabold text-amber-700">
-              <HelpCircle className="w-4 h-4 text-[#F4C914]" />
-              <span>Проверь себя ({activeStep.order}/5)</span>
+            <div className="flex items-center justify-between gap-2 text-xs font-extrabold">
+              <span className="inline-flex items-center gap-1.5 text-amber-700">
+                <HelpCircle className="w-4 h-4 text-[#F4C914]" />
+                <span>Проверь себя ({activeStep.order}/5)</span>
+              </span>
+              <span className="text-[#04959A] tabular-nums">
+                Верно: {state.stage1PythonChecked.length} из {CONCEPT_STEPS.length}
+              </span>
             </div>
 
             <h3 className="text-base sm:text-lg font-extrabold text-[#26313B] leading-snug">
@@ -439,20 +554,21 @@ export function Stage01Start({ state, onUpdate }: Stage01StartProps) {
             {activeIndex < CONCEPT_STEPS.length - 1 ? (
               <button
                 type="button"
-                onClick={() => setActiveIndex((i) => Math.min(CONCEPT_STEPS.length - 1, i + 1))}
-                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold cursor-pointer transition-colors ${
+                disabled={!isCurrentSolved}
+                onClick={() => isCurrentSolved && setActiveIndex((i) => Math.min(CONCEPT_STEPS.length - 1, i + 1))}
+                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-colors ${
                   isCurrentSolved
-                    ? 'bg-[#06B8BE] hover:bg-[#04959A] text-white'
-                    : 'bg-[#F4C914] hover:bg-amber-400 text-[#26313B]'
+                    ? 'bg-[#06B8BE] hover:bg-[#04959A] text-white cursor-pointer'
+                    : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
                 }`}
               >
-                Следующее понятие →
+                {isCurrentSolved ? 'Следующее понятие →' : 'Ответь верно, чтобы идти дальше'}
               </button>
             ) : (
               <span className="text-xs font-extrabold text-emerald-700">
                 {state.stage1PythonChecked.length >= 5
-                  ? 'Все 5 понятий пройдены! Жми кнопку внизу.'
-                  : 'Ответь верно на все 5 мини-вопросов'}
+                  ? 'Все 5 понятий изучены! Жми кнопку завершения внизу.'
+                  : 'Выбери верный ответ на 5-й вопрос'}
               </span>
             )}
           </div>

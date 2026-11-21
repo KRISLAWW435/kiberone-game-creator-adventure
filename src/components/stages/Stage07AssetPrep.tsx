@@ -14,7 +14,7 @@ interface Stage07AssetPrepProps {
 }
 
 const PHOTOROOM_STEPS = [
-  '1. Открой PhotoRoom и нажми «Выбрать фото» — загрузи картинку героя.',
+  '1. Открой PhotoRoom и нажми на кнопку «Начните с фото» или перетащи картинку в область «Или перетащите изображение сюда».',
   '2. Подожди 2–3 секунды — нейросеть удалит белый фон и покажет клеточки прозрачности.',
   '3. Нажми «Скачать» и убедись, что файл сохранился в формате .PNG.',
   '4. Переименуй файл в character.png для папки images/.',
@@ -52,7 +52,7 @@ export function Stage07AssetPrep({ state, onUpdate }: Stage07AssetPrepProps) {
 
   const hasValidTransparentUpload =
     Boolean(state.uploadedCharacterTransparentDataUrl) &&
-    state.uploadedCharacterHasTransparency !== false;
+    state.uploadedCharacterHasTransparency === true;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">

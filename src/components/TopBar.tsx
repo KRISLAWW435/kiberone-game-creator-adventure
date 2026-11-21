@@ -1,4 +1,4 @@
-import { Award, Compass, Download, Home, Monitor } from 'lucide-react';
+import { Award, Compass, Download, Gamepad2, Home, Monitor } from 'lucide-react';
 import type { AppMode } from '../types/lesson';
 
 interface TopBarProps {
@@ -29,8 +29,8 @@ export function TopBar({
           onClick={() => onSelectMode('select')}
           className="flex items-center gap-2.5 text-left whitespace-nowrap shrink-0 cursor-pointer group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#06B8BE]"
         >
-          <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#06B8BE] to-[#04959A] text-white font-extrabold text-sm flex items-center justify-center shadow-xs">
-            K
+          <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#06B8BE] to-[#04959A] text-white flex items-center justify-center shadow-xs">
+            <Gamepad2 className="w-4 h-4" />
           </span>
           <span className="text-sm sm:text-base font-extrabold tracking-tight text-[#26313B] group-hover:text-[#04959A] transition-colors">
             KIBERONE <span className="text-[#06B8BE]">GAME CREATOR</span>

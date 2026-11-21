@@ -12,6 +12,8 @@ export interface StoryDesign {
   setting: string;
   atmosphere: string;
   protagonist: string;
+  protagonistType?: string;
+  protagonistRole?: string;
   problem: string;
   goal: string;
   unusualEvent: string;
@@ -33,14 +35,24 @@ export interface BackgroundPromptDesign {
   extraDetails: string;
 }
 
+export type CharacterTypeId = 'girl' | 'boy' | 'robot' | 'creature' | 'custom';
+
 export interface CharacterDesign {
   name: string;
+  characterType?: CharacterTypeId;
   role: string;
   gender: string;
   age: string;
   hairstyle: string;
   hairColor: string;
   eyeColor: string;
+  headShape?: string;
+  antennas?: string;
+  sensorPanel?: string;
+  optics?: string;
+  bodyLights?: string;
+  creatureFeatures?: string;
+  creatureCoat?: string;
   clothing: string;
   accessories: string;
   specialFeature: string;

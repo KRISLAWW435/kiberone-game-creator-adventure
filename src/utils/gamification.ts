@@ -226,10 +226,16 @@ export interface StageRequirementResult {
   missingReason: string;
 }
 
+export const MANDATORY_STAGES_FOR_CERTIFICATE = [1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
+
+export function areMandatoryStagesCompleted(completedStages: number[]): boolean {
+  const doneSet = new Set(completedStages);
+  return MANDATORY_STAGES_FOR_CERTIFICATE.every((id) => doneSet.has(id));
+}
+
 export function getMaxUnlockedStage(state: LessonProgressState): number {
-  const highestCompleted = state.completedStages.length > 0 ? Math.max(...state.completedStages) : 0;
   const highestCleared = state.teacherClearedStages.length > 0 ? Math.max(...state.teacherClearedStages) : 0;
-  return Math.min(10, Math.max(state.currentStage, highestCompleted + 1, highestCleared + 1));
+  return Math.min(10, Math.max(1, state.currentStage, highestCleared + 1));
 }
 
 export function checkStageRequirements(
@@ -258,7 +264,10 @@ export function checkStageRequirements(
     }
     case 3: {
       const s = state.story;
-      if (!s.protagonist.trim() || !s.setting.trim()) {
+      const hasProtagonist = Boolean(
+        s.protagonist.trim() || s.protagonistType?.trim() || s.protagonistRole?.trim()
+      );
+      if (!hasProtagonist || !s.setting.trim()) {
         return { ready: false, missingReason: 'Задай место действия и главного героя' };
       }
       if (!s.choiceOne.trim() || !s.choiceTwo.trim() || !s.endingOne.trim() || !s.endingTwo.trim()) {
@@ -372,7 +381,21 @@ export function checkStageRequirements(
       }
       return { ready: true, missingReason: '' };
     }
-    case 10:
+    case 10: {
+      if (!areMandatoryStagesCompleted(state.completedStages)) {
+        return {
+          ready: false,
+          missingReason: 'Сначала заверши обязательные этапы 1–9, чтобы открыть финальный сертификат',
+        };
+      }
+      if (!state.studentName.trim() || !state.story.gameTitle.trim()) {
+        return {
+          ready: false,
+          missingReason: 'Впиши своё имя и финальное название игры для грамоты',
+        };
+      }
+      return { ready: true, missingReason: '' };
+    }
     default:
       return { ready: true, missingReason: '' };
   }

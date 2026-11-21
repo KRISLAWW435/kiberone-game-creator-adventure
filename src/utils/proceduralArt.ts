@@ -145,9 +145,9 @@ export async function inspectImageTransparency(dataUrl: string): Promise<Transpa
 
         const transparentRatio = transparentPixels / totalPixels;
         resolve({
-          hasTransparency: transparentRatio >= 0.05,
+          hasTransparency: transparentRatio >= 0.03,
           transparentRatio,
-          opaqueWhiteCorners: opaqueWhiteCount >= 3 && transparentRatio < 0.05,
+          opaqueWhiteCorners: opaqueWhiteCount >= 3 && transparentRatio < 0.03,
         });
       } catch {
         resolve({ hasTransparency: false, transparentRatio: 0, opaqueWhiteCorners: true });
@@ -158,4 +158,102 @@ export async function inspectImageTransparency(dataUrl: string): Promise<Transpa
     };
     img.src = dataUrl;
   });
+}
+
+/**
+ * Готовит две честные растровые PNG-иллюстрации одного и того же персонажа:
+ * 1) с настоящим прозрачным альфа-каналом (для демонстрации character.png);
+ * 2) с непрозрачным белым прямоугольным фоном (для демонстрации ошибки .jpg).
+ */
+export async function createCharacterTransparencyDemos(
+  imageUrl: string
+): Promise<{ transparentPngUrl: string; whiteBoxUrl: string } | null> {
+  try {
+    const res = await fetch(imageUrl);
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    const bitmap = await createImageBitmap(blob);
+
+    const width = Math.min(320, bitmap.width);
+    const height = Math.round((bitmap.height / bitmap.width) * width);
+
+    // 1. White-box version (simulating non-transparent background)
+    const whiteCanvas = document.createElement('canvas');
+    whiteCanvas.width = width;
+    whiteCanvas.height = height;
+    const whiteCtx = whiteCanvas.getContext('2d');
+    if (!whiteCtx) return null;
+    whiteCtx.fillStyle = '#FFFFFF';
+    whiteCtx.fillRect(0, 0, width, height);
+    whiteCtx.drawImage(bitmap, 0, 0, width, height);
+    const whiteBoxUrl = whiteCanvas.toDataURL('image/png');
+
+    // 2. Transparent cutout version via edge flood-fill of light/neutral studio background
+    const cutoutCanvas = document.createElement('canvas');
+    cutoutCanvas.width = width;
+    cutoutCanvas.height = height;
+    const cutoutCtx = cutoutCanvas.getContext('2d');
+    if (!cutoutCtx) return null;
+    cutoutCtx.drawImage(bitmap, 0, 0, width, height);
+    const imgData = cutoutCtx.getImageData(0, 0, width, height);
+    const data = imgData.data;
+
+    // Sample corner color as background reference
+    const cornerR = data[0];
+    const cornerG = data[1];
+    const cornerB = data[2];
+
+    const isBackgroundPixel = (idx: number) => {
+      const a = data[idx + 3];
+      if (a < 30) return true;
+      const r = data[idx];
+      const g = data[idx + 1];
+      const b = data[idx + 2];
+      const distCorner = Math.abs(r - cornerR) + Math.abs(g - cornerG) + Math.abs(b - cornerB);
+      const isVeryLight = r > 228 && g > 228 && b > 228 && Math.max(r, g, b) - Math.min(r, g, b) < 26;
+      return distCorner < 68 || isVeryLight;
+    };
+
+    const visited = new Uint8Array(width * height);
+    const queue = new Int32Array(width * height);
+    let head = 0;
+    let tail = 0;
+
+    const pushIfBg = (x: number, y: number) => {
+      if (x < 0 || x >= width || y < 0 || y >= height) return;
+      const pos = y * width + x;
+      if (visited[pos]) return;
+      if (isBackgroundPixel(pos * 4)) {
+        visited[pos] = 1;
+        queue[tail++] = pos;
+      }
+    };
+
+    for (let x = 0; x < width; x++) {
+      pushIfBg(x, 0);
+      pushIfBg(x, height - 1);
+    }
+    for (let y = 0; y < height; y++) {
+      pushIfBg(0, y);
+      pushIfBg(width - 1, y);
+    }
+
+    while (head < tail) {
+      const pos = queue[head++];
+      data[pos * 4 + 3] = 0;
+      const x = pos % width;
+      const y = (pos - x) / width;
+      pushIfBg(x + 1, y);
+      pushIfBg(x - 1, y);
+      pushIfBg(x, y + 1);
+      pushIfBg(x, y - 1);
+    }
+
+    cutoutCtx.putImageData(imgData, 0, 0);
+    const transparentPngUrl = cutoutCanvas.toDataURL('image/png');
+
+    return { transparentPngUrl, whiteBoxUrl };
+  } catch {
+    return null;
+  }
 }

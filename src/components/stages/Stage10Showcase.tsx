@@ -8,6 +8,7 @@ import type {
   ShowcaseChecklistState,
   StoryDesign,
 } from '../../types/lesson';
+import { areMandatoryStagesCompleted } from '../../utils/gamification';
 import { CertificatePreview } from '../common/CertificatePreview';
 import { ChipSelector } from '../common/ChipSelector';
 import { GuideMascot } from '../common/GuideMascot';
@@ -157,6 +158,7 @@ export function Stage10Showcase({
           unlockedKeysCount={state.unlockedKeys.length}
           earnedAchievementIds={state.earnedAchievements}
           dateFormatted={todayFormatted}
+          mandatoryStagesCompleted={areMandatoryStagesCompleted(state.completedStages)}
         />
       </section>
 

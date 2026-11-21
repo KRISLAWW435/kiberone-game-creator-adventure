@@ -76,34 +76,97 @@ export function buildBackgroundPrompt(bg: BackgroundPromptDesign, genre?: GenreI
 - Чистая, выразительная композиция с хорошим освещением.`;
 }
 
+function getCharacterTypeDisplay(ch: CharacterDesign): string {
+  switch (ch.characterType) {
+    case 'girl':
+      return 'девушка';
+    case 'boy':
+      return 'парень';
+    case 'robot':
+      return 'робот';
+    case 'creature':
+      return 'фантастическое существо';
+    case 'custom':
+      return ch.gender.trim() || 'уникальный персонаж';
+    default:
+      return ch.gender.trim() || 'персонаж';
+  }
+}
+
 export function buildCharacterPrompt(ch: CharacterDesign, styleOverride?: ArtStyleId): string {
   const stylePhrase = getStylePromptPhrase(styleOverride || ch.artStyle);
-  const nameAndRole = [ch.name.trim(), ch.role.trim()].filter(Boolean).join(', ') || 'главный герой визуальной новеллы';
-  const gender = ch.gender.trim() || 'подросток';
+  const charType = ch.characterType || 'custom';
+  const typeLabel = getCharacterTypeDisplay(ch);
+  const roleLabel = ch.role.trim() || 'исследователь';
+  const charName = ch.name.trim() || 'Герой';
   const age = ch.age.trim() || '14 лет';
-  const hairstyle = ch.hairstyle.trim() || 'аккуратная современная стрижка';
-  const hairColor = ch.hairColor.trim() || 'тёмно-каштановые';
-  const eyeColor = ch.eyeColor.trim() || 'яркие выразительные';
-  const clothing = ch.clothing.trim() || 'стильная повседневная куртка, удобные брюки и кроссовки';
-  const accessories = ch.accessories.trim() || 'небольшой рюкзак или наушники';
-  const specialFeature = ch.specialFeature.trim() || 'дружелюбный уверенный взгляд';
-  const personality = ch.personality.trim() || 'любознательный и смелый';
+  const accessories = ch.accessories.trim() || 'небольшая характерная деталь или гаджет';
+  const specialFeature = ch.specialFeature.trim() || 'выразительная запоминающаяся черта';
+  const personality = ch.personality.trim() || 'любознательный и уверенный';
 
-  return `Один игровой персонаж для визуальной новеллы (${nameAndRole}) ${stylePhrase}.
+  let appearanceLines = '';
+  let outfitLabel = 'Одежда';
+  let outfitValue = ch.clothing.trim();
+
+  if (charType === 'robot') {
+    const headShape = ch.headShape?.trim() || 'округлый корпус-голова с дисплеем';
+    const antennas = ch.antennas?.trim() || 'компактная антенна со световым индикатором';
+    const sensorPanel = ch.sensorPanel?.trim() || 'сенсорная панель с цифровыми эмоциями';
+    const optics = ch.optics?.trim() || 'яркая бирюзовая оптика глаз';
+    const bodyLights = ch.bodyLights?.trim() || 'мягкие неоновые световые линии на корпусе';
+    appearanceLines = [
+      `- Форма головы: ${headShape}.`,
+      `- Антенны: ${antennas}.`,
+      `- Сенсорная панель: ${sensorPanel}.`,
+      `- Оптика и свечение: ${optics}.`,
+      `- Световые элементы корпуса: ${bodyLights}.`,
+      `- Особая деталь: ${specialFeature}.`,
+    ].join('\n');
+    outfitLabel = 'Корпус, панели и броня';
+    outfitValue = outfitValue || 'гладкий стильный корпус, защитные панели и устойчивые опоры';
+  } else if (charType === 'creature') {
+    const features = ch.creatureFeatures?.trim() || 'выразительные уши, крылья или хвост';
+    const coat = ch.creatureCoat?.trim() || 'мягкая переливающаяся текстура покрова';
+    const eyes = ch.eyeColor.trim() || 'яркие необычные';
+    appearanceLines = [
+      `- Видимые особенности тела: ${features}.`,
+      `- Покров (кожа, мех или чешуя): ${coat}.`,
+      `- Глаза: ${eyes}.`,
+      `- Особая черта: ${specialFeature}.`,
+    ].join('\n');
+    outfitLabel = 'Детали образа и экипировка';
+    outfitValue = outfitValue || 'лёгкий плащ путешественника и элементы снаряжения в полный рост';
+  } else {
+    const hairstyle = ch.hairstyle.trim() || 'аккуратная современная стрижка';
+    const hairColor = ch.hairColor.trim() || 'тёмно-каштановые';
+    const eyeColor = ch.eyeColor.trim() || 'яркие выразительные';
+    appearanceLines = [
+      `- Причёска: ${hairstyle}.`,
+      `- Цвет волос: ${hairColor}.`,
+      `- Глаза: ${eyeColor}.`,
+      `- Особая черта: ${specialFeature}.`,
+    ].join('\n');
+    outfitLabel = 'Одежда (верх, низ, обувь)';
+    outfitValue = outfitValue || 'стильная повседневная куртка, удобные брюки и кроссовки';
+  }
+
+  return `Один игровой персонаж для визуальной новеллы ${stylePhrase}.
 Параметры персонажа:
-- Пол и возраст: ${gender}, ${age}.
-- Внешность: причёска — ${hairstyle}, цвет волос — ${hairColor}, глаза — ${eyeColor}.
-- Одежда: ${clothing}.
+- Имя: ${charName}.
+- Тип персонажа: ${typeLabel}.
+- Роль в сюжете: ${roleLabel}.
+- Возраст: ${age}.
+${appearanceLines}
+- ${outfitLabel}: ${outfitValue}.
 - Аксессуары: ${accessories}.
-- Особая деталь внешности: ${specialFeature}.
-- Характер и настроение: ${personality}, дружелюбная естественная поза.
+- Характер и настроение: ${personality}, выразительная естественная поза.
 
 Обязательные требования к генерации:
 - Персонаж строго на ЧИСТОМ ОДНОТОННОМ БЕЛОМ ФОНЕ (#FFFFFF), без теней на полу и без фона окружения.
-- Персонаж изображён В ПОЛНЫЙ РОСТ с головы до обуви.
-- Руки, кисти, ноги и обувь видны полностью и не обрезаны краями кадра.
+- Персонаж изображён В ПОЛНЫЙ РОСТ от макушки до нижней точки ног/опор.
+- Все части тела, руки, одежда и обувь видны полностью и не обрезаны краями кадра.
 - Чёткий, понятный силуэт, удобный для вырезания фона.
-- В кадре только ОДИН персонаж, без других людей, рамок, текста и лишних предметов вокруг.
+- В кадре только ОДИН персонаж, без других существ, рамок, текста и лишних предметов вокруг.
 - Сохраняй единый выбранный художественный стиль по всему рисунку.`;
 }
 
@@ -113,9 +176,15 @@ export function buildCharacterEmotionRefPrompt(
   styleOverride?: ArtStyleId
 ): string {
   const stylePhrase = getStylePromptPhrase(styleOverride || ch.artStyle);
+  const detailsNote =
+    ch.characterType === 'robot'
+      ? 'корпус, оптику, антенны, сенсорную панель'
+      : ch.characterType === 'creature'
+      ? 'внешние особенности, покров, детали образа'
+      : 'лицо, причёску, цвет волос и глаз, одежду';
   return `Используй прикреплённое изображение как строгий образец (референс) этого же персонажа.
-Сохрани без изменений его лицо, причёску, цвет волос и глаз, одежду, аксессуары, пропорции и стиль (${stylePhrase}).
-Измени ТОЛЬКО выражение лица и лёгкий жест рук на эмоцию: «${emotion}».
+Сохрани без изменений ${detailsNote}, аксессуары, пропорции и стиль (${stylePhrase}).
+Измени ТОЛЬКО выражение лица/экрана и лёгкий жест на эмоцию: «${emotion}».
 Обязательно оставь персонажа в полный рост на чистом белом фоне без лишних деталей и текста.`;
 }
 

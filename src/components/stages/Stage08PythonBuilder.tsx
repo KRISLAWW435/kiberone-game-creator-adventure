@@ -10,6 +10,7 @@ import {
   HelpCircle,
   Lock,
   RefreshCw,
+  Sparkles,
   Terminal,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -179,6 +180,8 @@ export function Stage08PythonBuilder({ state, onUpdate }: Stage08PythonBuilderPr
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
   const [activeRegion, setActiveRegion] = useState<CodeMapRegion['id']>('window');
   const [showInstallHelp, setShowInstallHelp] = useState(false);
+  const [showCuriousFlip, setShowCuriousFlip] = useState(false);
+  const [curiousFlipAnswer, setCuriousFlipAnswer] = useState<string | null>(null);
 
   const finalScenarioText = state.finalScenario || state.aiScriptResult;
   const autoPrompt = buildPythonGamePrompt(state.story, state.character, finalScenarioText, false);
@@ -449,6 +452,107 @@ export function Stage08PythonBuilder({ state, onUpdate }: Stage08PythonBuilderPr
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
+          </section>
+
+          {/* Optional Non-Blocking Section: Для любознательных (pygame.display.flip()) */}
+          <section className="bg-white border border-slate-200/90 rounded-3xl overflow-hidden shadow-xs">
+            <button
+              type="button"
+              onClick={() => setShowCuriousFlip((v) => !v)}
+              className="w-full px-5 py-4 flex items-center justify-between gap-4 text-left hover:bg-slate-50 transition-colors cursor-pointer"
+            >
+              <div className="flex items-center gap-2.5">
+                <Sparkles className="w-4 h-4 text-[#F4C914] shrink-0" />
+                <div>
+                  <p className="text-xs sm:text-sm font-extrabold text-[#26313B]">
+                    Для любознательных: как кадры появляются на экране (pygame.display.flip())
+                  </p>
+                  <p className="text-[11px] text-slate-500">
+                    Необязательный блок: не влияет на прохождение этапа, но раскроет секрет игрового цикла.
+                  </p>
+                </div>
+              </div>
+              {showCuriousFlip ? (
+                <ChevronUp className="w-4 h-4 text-slate-500 shrink-0" />
+              ) : (
+                <ChevronDown className="w-4 h-4 text-slate-500 shrink-0" />
+              )}
+            </button>
+
+            {showCuriousFlip && (
+              <div className="px-5 pb-5 pt-3 border-t border-slate-100 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="rounded-2xl bg-[#F4F8FB] border border-slate-200 p-3.5 space-y-1">
+                    <span className="inline-block px-2 py-0.5 rounded bg-[#06B8BE] text-white text-[11px] font-extrabold">
+                      Шаг 1 · Черновик
+                    </span>
+                    <p className="text-xs font-extrabold text-[#26313B]">Рисуем на скрытом холсте</p>
+                    <p className="text-xs text-slate-600 leading-snug">
+                      Команды <code className="font-mono font-bold text-[#04959A]">screen.blit(...)</code> собирают фон,
+                      героя и текст за кадром, чтобы игрок не видел мигания.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl bg-[#F4F8FB] border border-slate-200 p-3.5 space-y-1">
+                    <span className="inline-block px-2 py-0.5 rounded bg-[#F4C914] text-[#26313B] text-[11px] font-extrabold">
+                      Шаг 2 · Показ кадра
+                    </span>
+                    <p className="text-xs font-extrabold text-[#26313B]">pygame.display.flip()</p>
+                    <p className="text-xs text-slate-600 leading-snug">
+                      В конце цикла Pygame перелистывает готовый кадр на экран целиком за одну миллисекунду.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl bg-[#F4F8FB] border border-slate-200 p-3.5 space-y-1">
+                    <span className="inline-block px-2 py-0.5 rounded bg-slate-700 text-white text-[11px] font-extrabold">
+                      Шаг 3 · Зачем помнить
+                    </span>
+                    <p className="text-xs font-extrabold text-[#26313B]">Если забыть flip()</p>
+                    <p className="text-xs text-slate-600 leading-snug">
+                      Без обновления экрана картинка останется в памяти, а окно игры будет чёрным!
+                    </p>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl bg-cyan-50/60 border border-[#06B8BE]/35 p-4 space-y-2.5">
+                  <p className="text-xs font-extrabold text-[#26313B]">
+                    Мини-проверка (по желанию): какая команда показывает собранный кадр на экране?
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    {[
+                      { id: 'flip', label: 'pygame.display.flip()', ok: true },
+                      { id: 'quit', label: 'pygame.quit()', ok: false },
+                      { id: 'print', label: 'print("screen")', ok: false },
+                    ].map((opt) => {
+                      const picked = curiousFlipAnswer === opt.id;
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => setCuriousFlipAnswer(opt.id)}
+                          className={`px-3 py-2 rounded-xl border text-xs font-mono font-bold text-left cursor-pointer transition-colors ${
+                            !picked
+                              ? 'bg-white border-slate-200 text-[#26313B] hover:border-[#06B8BE]'
+                              : opt.ok
+                              ? 'bg-emerald-50 border-emerald-400 text-emerald-900'
+                              : 'bg-amber-50 border-amber-400 text-amber-900'
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {curiousFlipAnswer && (
+                    <p className="text-xs font-semibold text-[#26313B]">
+                      {curiousFlipAnswer === 'flip'
+                        ? '🎉 Точно! pygame.display.flip() перелистывает готовый кадр на монитор!'
+                        : curiousFlipAnswer === 'quit'
+                        ? '🧐 Почти! pygame.quit() закрывает окно при выходе, а кадр показывает pygame.display.flip().'
+                        : '💡 print() печатает текст в консоль, а за обновление графического окна отвечает pygame.display.flip().'}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
           </section>
         </div>
       )}

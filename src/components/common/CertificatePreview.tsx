@@ -15,6 +15,7 @@ interface CertificatePreviewProps {
   unlockedKeysCount: number;
   earnedAchievementIds: string[];
   dateFormatted: string;
+  mandatoryStagesCompleted?: boolean;
 }
 
 function wrapTextLines(text: string, maxChars: number, maxLines: number): string[] {
@@ -66,6 +67,7 @@ export function CertificatePreview({
   unlockedKeysCount,
   earnedAchievementIds,
   dateFormatted,
+  mandatoryStagesCompleted = true,
 }: CertificatePreviewProps) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [cyberBotDataUri, setCyberBotDataUri] = useState<string>('');
@@ -74,7 +76,7 @@ export function CertificatePreview({
 
   const trimmedStudent = studentName.trim();
   const trimmedGame = gameTitle.trim();
-  const isReadyToDownload = Boolean(trimmedStudent && trimmedGame);
+  const isReadyToDownload = mandatoryStagesCompleted && Boolean(trimmedStudent && trimmedGame);
 
   // Preload local CyberBot victory image as base64 data URI so SVG->Canvas never taints
   useEffect(() => {
@@ -215,7 +217,14 @@ export function CertificatePreview({
     <div className="space-y-4">
       {/* Validation Notice OR Download Buttons */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        {!isReadyToDownload ? (
+        {!mandatoryStagesCompleted ? (
+          <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-rose-50 border border-rose-300 text-xs sm:text-sm font-bold text-rose-900">
+            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+            <span>
+              Грамота заблокирована: сначала заверши обязательные этапы 1–9 и собери ключи!
+            </span>
+          </div>
+        ) : !isReadyToDownload ? (
           <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-50 border border-[#F4C914] text-xs sm:text-sm font-bold text-amber-950">
             <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
             <span>
@@ -245,7 +254,7 @@ export function CertificatePreview({
           </div>
         ) : (
           <span className="text-xs font-bold text-emerald-700">
-            Грамота готова к скачиванию в альбомном формате A4 (офлайн, без системной печати).
+            Грамота готова к скачиванию в альбомном формате A4 (PNG и PDF).
           </span>
         )}
 
@@ -446,15 +455,16 @@ export function CertificatePreview({
           ) : (
             <circle cx="1265" cy="365" r="96" fill="#E0F7FA" />
           )}
-          <rect x="1160" y="468" width="210" height="36" rx="12" fill="#F4C914" />
+          <rect x="1128" y="466" width="274" height="38" rx="14" fill="#F4C914" />
           <text
             x="1265"
-            y="492"
+            y="491"
             textAnchor="middle"
             fill="#26313B"
-            fontSize="17"
+            fontSize="16"
             fontWeight="800"
             fontFamily="Inter, Arial, sans-serif"
+            letterSpacing="0.6"
           >
             ОДОБРЕНО КИБЕРБОТОМ
           </text>
@@ -496,24 +506,28 @@ export function CertificatePreview({
             Жанр: {getGenreLabel(genre)}   ·   Стиль графики: {getStyleLabel(artStyle)}   ·   Окно 1000×600
           </text>
 
-          {/* Metrics Column on Right (XP, Keys, Date) */}
-          <rect x="1125" y="528" width="278" height="142" rx="20" fill="#26313B" />
-          <text x="1152" y="566" fill="#94A3B8" fontSize="17" fontWeight="700" fontFamily="Inter, Arial, sans-serif">
-            Набрано опыта (XP):
+          {/* Metrics Column on Right: 3 separate non-overlapping cards (XP, Keys, Date) */}
+          <rect x="1125" y="514" width="278" height="46" rx="14" fill="#26313B" />
+          <text x="1146" y="543" fill="#CBD5E1" fontSize="16" fontWeight="700" fontFamily="Inter, Arial, sans-serif">
+            Набрано опыта:
           </text>
-          <text x="1376" y="566" textAnchor="end" fill="#F4C914" fontSize="22" fontWeight="800" fontFamily="Inter, Arial, sans-serif">
+          <text x="1382" y="544" textAnchor="end" fill="#F4C914" fontSize="20" fontWeight="800" fontFamily="Inter, Arial, sans-serif">
             {xp} XP
           </text>
-          <text x="1152" y="606" fill="#94A3B8" fontSize="17" fontWeight="700" fontFamily="Inter, Arial, sans-serif">
+
+          <rect x="1125" y="569" width="278" height="46" rx="14" fill="#26313B" />
+          <text x="1146" y="598" fill="#CBD5E1" fontSize="16" fontWeight="700" fontFamily="Inter, Arial, sans-serif">
             Ключей этапа:
           </text>
-          <text x="1376" y="606" textAnchor="end" fill="#06B8BE" fontSize="22" fontWeight="800" fontFamily="Inter, Arial, sans-serif">
+          <text x="1382" y="599" textAnchor="end" fill="#06B8BE" fontSize="20" fontWeight="800" fontFamily="Inter, Arial, sans-serif">
             {unlockedKeysCount} / 10
           </text>
-          <text x="1152" y="646" fill="#94A3B8" fontSize="17" fontWeight="700" fontFamily="Inter, Arial, sans-serif">
+
+          <rect x="1125" y="624" width="278" height="46" rx="14" fill="#26313B" />
+          <text x="1146" y="653" fill="#CBD5E1" fontSize="16" fontWeight="700" fontFamily="Inter, Arial, sans-serif">
             Дата:
           </text>
-          <text x="1376" y="646" textAnchor="end" fill="#FFFFFF" fontSize="18" fontWeight="700" fontFamily="Inter, Arial, sans-serif">
+          <text x="1382" y="653" textAnchor="end" fill="#FFFFFF" fontSize="17" fontWeight="700" fontFamily="Inter, Arial, sans-serif">
             {dateFormatted}
           </text>
 
@@ -588,7 +602,7 @@ export function CertificatePreview({
             </text>
           )}
 
-          {/* Footer Disclaimer */}
+          {/* Footer Note */}
           <text
             x="84"
             y="968"
@@ -597,7 +611,7 @@ export function CertificatePreview({
             fontWeight="600"
             fontFamily="Inter, Arial, sans-serif"
           >
-            * Памятный сертификат об участии в практическом занятии KIBERONE VIBE CODING LAB. Не является официальным документом государственного образца об образовании.
+            * Памятная именная грамота участника практического занятия KIBERONE Game Creator Adventure.
           </text>
         </svg>
       </div>

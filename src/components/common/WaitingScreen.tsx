@@ -8,6 +8,7 @@ interface WaitingScreenProps {
   stageTitle: string;
   rewardBadge: string;
   xp: number;
+  completedStages: number[];
   completedBonusQuests: string[];
   onCompleteBonusQuest: (questId: string) => void;
   onReturnToStage: () => void;
@@ -23,6 +24,7 @@ export function WaitingScreen({
   stageTitle,
   rewardBadge,
   xp,
+  completedStages,
   completedBonusQuests,
   onCompleteBonusQuest,
   onReturnToStage,
@@ -63,7 +65,8 @@ export function WaitingScreen({
       {/* Stage-specific Mini Quests */}
       <div className="rounded-2xl bg-[#F4F8FB] border border-slate-200 p-5">
         <WaitingMiniQuests
-          stageNumber={stageNumber}
+          stageId={stageNumber}
+          completedStages={completedStages}
           completedQuestIds={completedBonusQuests}
           onCompleteQuest={onCompleteBonusQuest}
         />

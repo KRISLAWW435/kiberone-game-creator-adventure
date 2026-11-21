@@ -54,6 +54,10 @@ export default function App() {
             maxUnlockedStage={maxUnlockedStage}
             xp={state.xp}
             unlockedKeysCount={state.unlockedKeys.length}
+            unlockedKeys={state.unlockedKeys}
+            earnedAchievements={state.earnedAchievements}
+            openedChests={state.openedChests}
+            claimedStickers={state.claimedStickers}
             onSelectMode={setMode}
             onJumpToStage={setCurrentStage}
             onResetProgress={resetAllProgress}

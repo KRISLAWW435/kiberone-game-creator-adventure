@@ -40,6 +40,21 @@ const ATMOSPHERE_CHIPS = [
   'Фантастическая, с неоновым светом',
 ];
 
+const PROTAGONIST_TYPE_CHIPS = [
+  'Парень',
+  'Девушка',
+  'Робот',
+  'Фантастическое существо',
+];
+
+const PROTAGONIST_ROLE_CHIPS = [
+  'Исследователь',
+  'Изобретатель',
+  'Детектив',
+  'Путешественник',
+  'Хранитель тайны',
+];
+
 const PROTAGONIST_CHIPS = [
   'Подросток-изобретатель с рюкзаком гаджетов',
   'Любознательный школьник-детектив',
@@ -103,7 +118,10 @@ export function Stage03StoryDesigner({
   const [subStep, setSubStep] = useState<1 | 2 | 3 | 4>(1);
 
   const step1Done = Boolean(story.setting.trim());
-  const step2Done = Boolean(story.protagonist.trim() && (story.problem.trim() || story.goal.trim()));
+  const step2Done = Boolean(
+    (story.protagonist.trim() || story.protagonistType?.trim() || story.protagonistRole?.trim()) &&
+      (story.problem.trim() || story.goal.trim())
+  );
   const step3Done = Boolean(story.unusualEvent.trim() || story.customIdea.trim());
 
   const duplicateChoice =
@@ -229,8 +247,39 @@ export function Stage03StoryDesigner({
                 </div>
               </div>
 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <ChipSelector
+                  label="Тип героя"
+                  options={PROTAGONIST_TYPE_CHIPS}
+                  value={story.protagonistType || ''}
+                  onChange={(val) => {
+                    const rolePart = story.protagonistRole?.trim();
+                    const autoSummary = [val, rolePart].filter(Boolean).join(' · ');
+                    onUpdateStory({
+                      protagonistType: val,
+                      ...(story.protagonist.trim() ? {} : { protagonist: autoSummary }),
+                    });
+                  }}
+                  placeholder="Свой тип (например: киборг)..."
+                />
+                <ChipSelector
+                  label="Роль героя"
+                  options={PROTAGONIST_ROLE_CHIPS}
+                  value={story.protagonistRole || ''}
+                  onChange={(val) => {
+                    const typePart = story.protagonistType?.trim();
+                    const autoSummary = [typePart, val].filter(Boolean).join(' · ');
+                    onUpdateStory({
+                      protagonistRole: val,
+                      ...(story.protagonist.trim() ? {} : { protagonist: autoSummary }),
+                    });
+                  }}
+                  placeholder="Своя роль в сюжете..."
+                />
+              </div>
+
               <ChipSelector
-                label="Главный герой *"
+                label="Краткое описание главного героя *"
                 options={PROTAGONIST_CHIPS}
                 value={story.protagonist}
                 onChange={(val) => onUpdateStory({ protagonist: val })}
@@ -425,41 +474,65 @@ export function Stage03StoryDesigner({
             <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80">
               <dt className="font-bold text-slate-400">Локация и атмосфера</dt>
               <dd className="font-bold text-[#26313B] mt-0.5">
-                {story.setting || 'Пока не выбрано'}
-                {story.atmosphere ? ` · ${story.atmosphere}` : ''}
+                {story.setting.trim() || 'Пока не выбрано'}
+                {story.atmosphere.trim() ? ` · ${story.atmosphere}` : ''}
               </dd>
             </div>
 
             <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80">
               <dt className="font-bold text-slate-400">Главный герой</dt>
-              <dd className="font-bold text-[#26313B] mt-0.5">{story.protagonist || 'Пока не выбран'}</dd>
-            </div>
-
-            <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80">
-              <dt className="font-bold text-slate-400">Завязка и цель</dt>
-              <dd className="text-[#26313B] mt-0.5">
-                {story.problem || 'Проблема не задана'} {story.goal ? `→ Цель: ${story.goal}` : ''}
+              <dd className="font-bold text-[#26313B] mt-0.5 space-y-0.5">
+                {(story.protagonistType || story.protagonistRole) && (
+                  <p className="text-[11px] text-[#04959A]">
+                    {[
+                      story.protagonistType ? `Тип: ${story.protagonistType}` : '',
+                      story.protagonistRole ? `Роль: ${story.protagonistRole}` : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </p>
+                )}
+                <p>{story.protagonist.trim() || 'Пока не выбран'}</p>
               </dd>
             </div>
 
-            {story.unusualEvent && (
-              <div className="p-2.5 rounded-xl bg-cyan-50/70 border border-[#06B8BE]/30">
-                <dt className="font-bold text-[#04959A]">Неожиданное событие</dt>
-                <dd className="text-[#26313B] mt-0.5">{story.unusualEvent}</dd>
-              </div>
-            )}
+            <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80">
+              <dt className="font-bold text-slate-400">Проблема и цель</dt>
+              <dd className="text-[#26313B] mt-0.5 space-y-0.5">
+                <p>
+                  <span className="font-bold text-slate-500">Проблема:</span>{' '}
+                  {story.problem.trim() || 'Не задана'}
+                </p>
+                <p>
+                  <span className="font-bold text-slate-500">Цель:</span>{' '}
+                  {story.goal.trim() || 'Не задана'}
+                </p>
+              </dd>
+            </div>
+
+            <div className="p-2.5 rounded-xl bg-cyan-50/70 border border-[#06B8BE]/30">
+              <dt className="font-bold text-[#04959A]">Событие и фишка</dt>
+              <dd className="text-[#26313B] mt-0.5 space-y-0.5">
+                <p>{story.unusualEvent.trim() || 'Событие пока не выбрано'}</p>
+                {story.customIdea.trim() && (
+                  <p className="text-[11px] font-semibold text-amber-800">
+                    Фишка: {story.customIdea}
+                  </p>
+                )}
+              </dd>
+            </div>
 
             <div className="grid grid-cols-1 gap-2 pt-1">
               <div className="p-2.5 rounded-xl bg-cyan-50/60 border border-[#06B8BE]/35">
                 <dt className="font-extrabold text-[#04959A]">Выбор 1 → Финал 1</dt>
-                <dd className="text-[#26313B] mt-0.5 line-clamp-2">
-                  {story.choiceOne || '—'} → {story.endingOne || '—'}
+                <dd className="text-[#26313B] mt-0.5 break-words">
+                  {story.choiceOne.trim() || '—'} → {story.endingOne.trim() || '—'}
                 </dd>
               </div>
               <div className="p-2.5 rounded-xl bg-amber-50/70 border border-[#F4C914]/60">
                 <dt className="font-extrabold text-amber-800">Выбор 2 → Финал 2</dt>
-                <dd className="text-[#26313B] mt-0.5 line-clamp-2">
-                  {story.choiceTwo || '—'} → {story.endingTwo || '—'}
+                <dd className="text-[#26313B] mt-0.5 break-words">
+                  {story.choiceTwo.trim() || '—'} → {story.endingTwo.trim() || '—'}
                 </dd>
               </div>
             </div>

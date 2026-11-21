@@ -3,6 +3,7 @@ import type {
   ArtStyleId,
   BackgroundPromptDesign,
   CharacterDesign,
+  CharacterTypeId,
   LessonProgressState,
   ReflectionAnswers,
   ShowcaseChecklistState,
@@ -45,6 +46,8 @@ export function createInitialLessonState(): LessonProgressState {
       setting: '',
       atmosphere: '',
       protagonist: '',
+      protagonistType: '',
+      protagonistRole: '',
       problem: '',
       goal: '',
       unusualEvent: '',
@@ -76,12 +79,20 @@ export function createInitialLessonState(): LessonProgressState {
     uploadedBackgroundName: '',
     character: {
       name: '',
-      role: 'Главный герой',
+      characterType: undefined,
+      role: '',
       gender: '',
       age: '14 лет',
       hairstyle: '',
       hairColor: '',
       eyeColor: '',
+      headShape: '',
+      antennas: '',
+      sensorPanel: '',
+      optics: '',
+      bodyLights: '',
+      creatureFeatures: '',
+      creatureCoat: '',
       clothing: '',
       accessories: '',
       specialFeature: '',
@@ -157,11 +168,22 @@ function hydrateState(parsed: Partial<LessonProgressState>): LessonProgressState
       : fallback.selectedArtStyle;
 
   const unlockedKeys = computeUnlockedKeys(completedStages);
+  const completedSet = new Set(completedStages);
+  const validChestById = new Map(CHESTS_CATALOG.map((c) => [c.id, c]));
   const openedChests = Array.isArray(safeParsed.openedChests)
-    ? Array.from(new Set(safeParsed.openedChests)).filter((c): c is string => typeof c === 'string')
+    ? Array.from(new Set(safeParsed.openedChests)).filter((c): c is string => {
+        if (typeof c !== 'string') return false;
+        const chest = validChestById.get(c);
+        return Boolean(chest && completedSet.has(chest.afterStage));
+      })
     : [];
+  const allowedStickers = new Set(
+    openedChests.map((id) => validChestById.get(id)?.stickerId).filter(Boolean)
+  );
   const claimedStickers = Array.isArray(safeParsed.claimedStickers)
-    ? Array.from(new Set(safeParsed.claimedStickers)).filter((s): s is string => typeof s === 'string')
+    ? Array.from(new Set(safeParsed.claimedStickers)).filter(
+        (s): s is string => typeof s === 'string' && allowedStickers.has(s)
+      )
     : [];
 
   const safeStory =
@@ -172,6 +194,22 @@ function hydrateState(parsed: Partial<LessonProgressState>): LessonProgressState
       : {};
   const safeCharacter =
     safeParsed.character && typeof safeParsed.character === 'object' ? safeParsed.character : {};
+
+  const inferCharacterType = (charObj: Partial<CharacterDesign>): CharacterTypeId | undefined => {
+    if (
+      charObj.characterType &&
+      ['girl', 'boy', 'robot', 'creature', 'custom'].includes(charObj.characterType)
+    ) {
+      return charObj.characterType;
+    }
+    const rawGender = (charObj.gender || '').toLowerCase();
+    if (rawGender.includes('девушк')) return 'girl';
+    if (rawGender.includes('парен')) return 'boy';
+    if (rawGender.includes('робот')) return 'robot';
+    if (rawGender.includes('существ')) return 'creature';
+    if (rawGender.trim()) return 'custom';
+    return undefined;
+  };
 
   return {
     ...fallback,
@@ -234,6 +272,7 @@ function hydrateState(parsed: Partial<LessonProgressState>): LessonProgressState
     character: {
       ...fallback.character,
       ...safeCharacter,
+      characterType: inferCharacterType(safeCharacter),
       artStyle: selectedArtStyle,
     },
     testChecklist: {
@@ -283,7 +322,26 @@ export function useLessonState() {
   const [state, setState] = useState<LessonProgressState>(() => safeLoadFromStorage());
 
   useEffect(() => {
+    const hasMeaningfulState =
+      state.completedStages.length > 0 ||
+      state.xp > 0 ||
+      state.currentStage > 1 ||
+      state.stage1PythonChecked.length > 0 ||
+      Object.keys(state.stage1ConceptAnswers || {}).length > 0 ||
+      Boolean(
+        state.studentName.trim() ||
+          state.story.gameTitle.trim() ||
+          state.story.genre ||
+          state.story.setting.trim() ||
+          state.story.protagonist.trim() ||
+          state.finalScenario.trim() ||
+          state.character.name.trim()
+      );
+
     try {
+      if (!hasMeaningfulState) {
+        if (!localStorage.getItem(STORAGE_KEY)) return;
+      }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (err) {
       recordDiagnosticError(
@@ -373,12 +431,15 @@ export function useLessonState() {
     [updateState]
   );
 
-  /** Открывает сундук награды строго один раз и выдаёт стикер */
+  /** Открывает сундук награды строго один раз и только после завершения нужного этапа */
   const openChest = useCallback(
     (chestId: string) => {
       const chest = CHESTS_CATALOG.find((c) => c.id === chestId);
       if (!chest) return;
       updateState((prev) => {
+        if (!prev.completedStages.includes(chest.afterStage)) {
+          return prev;
+        }
         const nextChests = prev.openedChests.includes(chestId)
           ? prev.openedChests
           : [...prev.openedChests, chestId];
@@ -545,16 +606,7 @@ export function useLessonState() {
   }, []);
 
   const hasSavedProgress =
-    state.currentStage > 1 ||
-    state.completedStages.length > 0 ||
-    state.xp > 0 ||
-    state.stage1PythonChecked.length > 0 ||
-    Boolean(
-      state.story.genre ||
-        state.story.protagonist ||
-        state.finalScenario ||
-        state.aiScriptResult
-    );
+    state.xp > 0 || state.unlockedKeys.length > 0 || state.completedStages.length > 0;
 
   return {
     state,

@@ -115,7 +115,7 @@ export function Stage04AiScript({ state, onUpdate }: Stage04AiScriptProps) {
           <div>
             <h3 className="text-base sm:text-lg font-extrabold text-[#26313B]">2. Вставь готовый сценарий от ИИ</h3>
             <p className="text-xs text-slate-500">
-              Именно этот текст попадёт на Этап 8 для генерации игры на Python.
+              Именно этот текст станет сценарием твоей будущей игры.
             </p>
           </div>
           <span

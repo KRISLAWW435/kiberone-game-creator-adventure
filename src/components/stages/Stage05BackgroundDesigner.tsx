@@ -1,10 +1,22 @@
 import {
   AlertCircle,
+  ArrowRight,
   Check,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  ClipboardCopy,
   Download,
   ExternalLink,
+  FolderPlus,
   Image as ImageIcon,
+  Info,
+  Layers,
+  Maximize2,
+  MousePointerClick,
   RefreshCw,
+  Send,
+  SlidersHorizontal,
   Sparkles,
   Upload,
   Wand2,
@@ -65,7 +77,23 @@ export function Stage05BackgroundDesigner({
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [downloadMsg, setDownloadMsg] = useState<string | null>(null);
   const [availableMap, setAvailableMap] = useState<Record<string, boolean>>({});
+  const [showFlowGuide, setShowFlowGuide] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const GOOGLE_FLOW_12_STEPS = [
+    { icon: ClipboardCopy, text: 'Скопируй готовый промпт для фона слева.' },
+    { icon: ExternalLink, text: 'Нажми на кнопку «Перейти в Google Flow» (откроется в новой вкладке).' },
+    { icon: FolderPlus, text: 'Нажми кнопку «Новый проект» (+ New project).' },
+    { icon: MousePointerClick, text: 'Нажми на поле для текста («Что нужно создать?») в нижней части экрана.' },
+    { icon: ImageIcon, text: 'В правой части поля текста нажми на меню настроек и выбери «Изображение» (Image).' },
+    { icon: Maximize2, text: 'Там же выбери соотношение сторон 16:9 (альбомная / горизонтальная ориентация).' },
+    { icon: SlidersHorizontal, text: 'Количество генераций поставь 1 или 2.' },
+    { icon: Layers, text: 'Нажми на поле ввода и вставь скопированный промпт (Ctrl+V).' },
+    { icon: Send, text: 'Нажми стрелочку отправки (Generate) и подожди 5–10 секунд.' },
+    { icon: Download, text: 'Открой понравившуюся картинку, нажми на иконку скачивания и сохрани её как background.jpg.' },
+    { icon: Upload, text: 'Вернись в KIBERONE и загрузи файл background.jpg в окошко ниже.' },
+    { icon: CheckCircle2, text: 'Проверь, что на фоне нет людей и лишнего текста, а кадр широкий (16:9).' },
+  ];
 
   const activeStyle = state.selectedArtStyle || state.backgroundPromptDesign.artStyle || 'anime';
   const styleCard = ART_STYLE_CARDS.find((s) => s.id === activeStyle) || ART_STYLE_CARDS[0];
@@ -392,15 +420,17 @@ export function Stage05BackgroundDesigner({
 
           <div className="lg:col-span-5 space-y-4">
             <div className="bg-gradient-to-br from-cyan-50 to-amber-50 border-2 border-[#06B8BE]/45 rounded-3xl p-5 space-y-3 shadow-xs">
-              <h4 className="text-base font-extrabold text-[#26313B]">Как создать свой фон</h4>
-              <ol className="space-y-2 text-xs sm:text-sm text-[#26313B] leading-relaxed">
-                <li>1. Скопируй промпт слева.</li>
-                <li>2. Открой Google Flow и выбери формат <strong>16:9</strong>.</li>
-                <li>
-                  3. Сохрани картинку в папку игры как{' '}
-                  <code className="font-mono font-bold text-[#04959A]">background.jpg</code> и загрузи её ниже.
-                </li>
-              </ol>
+              <div className="flex items-center justify-between gap-2">
+                <h4 className="text-base font-extrabold text-[#26313B]">Google Flow</h4>
+                <button
+                  type="button"
+                  onClick={() => setShowFlowGuide((v) => !v)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-[#06B8BE]/40 text-xs font-extrabold text-[#04959A] hover:bg-cyan-50 cursor-pointer"
+                >
+                  <span>Как создать свой фон в Google Flow</span>
+                  {showFlowGuide ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </button>
+              </div>
 
               <a
                 href="https://labs.google/fx/tools/flow"
@@ -409,9 +439,39 @@ export function Stage05BackgroundDesigner({
                 className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-[#F4C914] hover:bg-amber-400 text-[#26313B] text-xs sm:text-sm font-extrabold shadow-sm transition-colors"
               >
                 <Wand2 className="w-4 h-4" />
-                <span>ОТКРЫТЬ GOOGLE FLOW</span>
+                <span>Перейти в Google Flow</span>
+                <ArrowRight className="w-4 h-4" />
                 <ExternalLink className="w-4 h-4" />
               </a>
+
+              {showFlowGuide && (
+                <div className="animate-lab-enter space-y-2.5 pt-2 border-t border-[#06B8BE]/25">
+                  <ol className="space-y-1.5">
+                    {GOOGLE_FLOW_12_STEPS.map((step, idx) => {
+                      const StepIcon = step.icon;
+                      return (
+                        <li
+                          key={step.text}
+                          className="flex items-start gap-2.5 p-2.5 rounded-xl bg-white/95 border border-slate-200 text-xs text-[#26313B]"
+                        >
+                          <span className="w-5 h-5 rounded-md bg-[#06B8BE] text-white text-[11px] font-extrabold flex items-center justify-center shrink-0 tabular-nums">
+                            {idx + 1}
+                          </span>
+                          <StepIcon className="w-4 h-4 text-[#04959A] shrink-0 mt-0.5" />
+                          <span className="leading-snug font-medium">{step.text}</span>
+                        </li>
+                      );
+                    })}
+                  </ol>
+                  <div className="rounded-xl bg-amber-50 border border-[#F4C914]/70 p-2.5 flex items-start gap-2 text-[11px] text-amber-950 leading-snug">
+                    <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                    <span>
+                      Внешний вид Google Flow может немного меняться при обновлениях сервиса — ориентируйся на названия
+                      пунктов (Изображение / Image, 16:9, Скачать).
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="bg-white border border-slate-200 rounded-3xl p-5 space-y-3 shadow-xs">

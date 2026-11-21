@@ -1,7 +1,8 @@
-import { Check, CheckCircle2, Layers, Palette, Sparkles } from 'lucide-react';
+import { Check, CheckCircle2, Layers, Palette, Sparkles, ZoomIn } from 'lucide-react';
 import { useState } from 'react';
 import { ART_STYLE_CARDS, GENRE_CARDS, VN_DEMO_SCENE_PATH } from '../../config/mediaAssets';
 import type { ArtStyleId, GenreId, LessonProgressState, StoryDesign } from '../../types/lesson';
+import { ImageZoomModal } from '../common/ImageZoomModal';
 import { SafeImage } from '../common/SafeImage';
 
 type AnatomyElementId = 'background' | 'character' | 'ui' | 'dialogue' | 'choice' | 'ending';
@@ -68,6 +69,7 @@ export function Stage02VisualNovel({
   const [subTab, setSubTab] = useState<'style' | 'anatomy'>('style');
   const [selectedId, setSelectedId] = useState<AnatomyElementId>('background');
   const [previewBranch, setPreviewBranch] = useState<'intro' | 'c1' | 'c2'>('intro');
+  const [zoomImage, setZoomImage] = useState<{ src: string; alt: string; caption?: string } | null>(null);
 
   const selectedElement = ANATOMY_ELEMENTS.find((e) => e.id === selectedId) || ANATOMY_ELEMENTS[0];
   const currentStyleCard =
@@ -75,11 +77,18 @@ export function Stage02VisualNovel({
 
   const handleSelectGenre = (genreId: GenreId) => {
     const card = GENRE_CARDS.find((g) => g.id === genreId);
+    const allDefaultSettings = new Set(GENRE_CARDS.map((g) => g.defaultSetting));
+    const allDefaultAtmospheres = new Set(GENRE_CARDS.map((g) => g.defaultAtmosphere));
+    const isSettingDefaultOrEmpty =
+      !state.story.setting.trim() || allDefaultSettings.has(state.story.setting.trim());
+    const isAtmosphereDefaultOrEmpty =
+      !state.story.atmosphere.trim() || allDefaultAtmospheres.has(state.story.atmosphere.trim());
+
     const nextStory: StoryDesign = {
       ...state.story,
       genre: genreId,
-      setting: state.story.setting.trim() ? state.story.setting : card?.defaultSetting || '',
-      atmosphere: state.story.atmosphere.trim() ? state.story.atmosphere : card?.defaultAtmosphere || '',
+      setting: isSettingDefaultOrEmpty ? card?.defaultSetting || '' : state.story.setting,
+      atmosphere: isAtmosphereDefaultOrEmpty ? card?.defaultAtmosphere || '' : state.story.atmosphere,
     };
     if (onUpdateStory) {
       onUpdateStory({
@@ -164,24 +173,47 @@ export function Stage02VisualNovel({
               {GENRE_CARDS.map((card) => {
                 const isSelected = state.story.genre === card.id;
                 return (
-                  <button
+                  <div
                     key={card.id}
-                    type="button"
+                    role="button"
+                    tabIndex={0}
                     onClick={() => handleSelectGenre(card.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleSelectGenre(card.id);
+                      }
+                    }}
                     className={`group text-left rounded-2xl overflow-hidden border-2 transition-all cursor-pointer flex flex-col ${
                       isSelected
                         ? 'border-[#06B8BE] ring-4 ring-[#06B8BE]/15 bg-cyan-50/40'
                         : 'border-slate-200 hover:border-[#06B8BE]/60 bg-white'
                     }`}
                   >
-                    <div className="relative aspect-[4/3] w-full bg-slate-100 overflow-hidden">
+                    <div className="relative h-44 w-full bg-[#F4F8FB] border-b border-slate-100 flex items-center justify-center p-2 overflow-hidden">
                       <SafeImage
                         src={card.imagePath}
                         alt={card.label}
                         fallbackTitle={card.label}
                         referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-200"
+                        className="max-h-full max-w-full w-auto h-auto object-contain object-center transition-transform duration-200 group-hover:scale-[1.03]"
                       />
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setZoomImage({
+                            src: card.imagePath,
+                            alt: card.label,
+                            caption: card.subtitle,
+                          });
+                        }}
+                        aria-label={`Увеличить: ${card.label}`}
+                        title="Увеличить изображение"
+                        className="absolute top-2 left-2 w-7 h-7 rounded-lg bg-white/95 hover:bg-[#06B8BE] text-[#26313B] hover:text-white border border-slate-200 shadow-xs flex items-center justify-center cursor-pointer transition-colors"
+                      >
+                        <ZoomIn className="w-3.5 h-3.5" />
+                      </button>
                       {isSelected && (
                         <span className="absolute top-2 right-2 w-7 h-7 rounded-full bg-[#06B8BE] text-white flex items-center justify-center shadow">
                           <Check className="w-4 h-4" />
@@ -192,7 +224,7 @@ export function Stage02VisualNovel({
                       <p className="font-extrabold text-sm text-[#26313B]">{card.label}</p>
                       <p className="text-xs text-slate-500 mt-1 leading-snug">{card.subtitle}</p>
                     </div>
-                  </button>
+                  </div>
                 );
               })}
             </div>
@@ -219,24 +251,47 @@ export function Stage02VisualNovel({
               {ART_STYLE_CARDS.map((styleCard) => {
                 const isSelected = state.selectedArtStyle === styleCard.id;
                 return (
-                  <button
+                  <div
                     key={styleCard.id}
-                    type="button"
+                    role="button"
+                    tabIndex={0}
                     onClick={() => handleSelectStyle(styleCard.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleSelectStyle(styleCard.id);
+                      }
+                    }}
                     className={`group text-left rounded-2xl overflow-hidden border-2 transition-all cursor-pointer flex flex-col ${
                       isSelected
                         ? 'border-[#06B8BE] ring-4 ring-[#06B8BE]/15 bg-cyan-50/40'
                         : 'border-slate-200 hover:border-[#06B8BE]/60 bg-white'
                     }`}
                   >
-                    <div className="relative aspect-[4/3] bg-white border-b border-slate-100 overflow-hidden">
+                    <div className="relative h-56 bg-white border-b border-slate-100 flex items-center justify-center p-2.5 overflow-hidden">
                       <SafeImage
                         src={styleCard.imagePath}
                         alt={styleCard.label}
                         fallbackTitle={styleCard.label}
                         referrerPolicy="no-referrer"
-                        className="w-full h-full object-contain p-2 group-hover:scale-[1.03] transition-transform duration-200"
+                        className="max-h-full max-w-full w-auto h-auto object-contain object-center group-hover:scale-[1.03] transition-transform duration-200"
                       />
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setZoomImage({
+                            src: styleCard.imagePath,
+                            alt: styleCard.label,
+                            caption: styleCard.shortDescription,
+                          });
+                        }}
+                        aria-label={`Увеличить: ${styleCard.label}`}
+                        title="Увеличить изображение"
+                        className="absolute top-2.5 left-2.5 w-8 h-8 rounded-lg bg-white/95 hover:bg-[#06B8BE] text-[#26313B] hover:text-white border border-slate-200 shadow-xs flex items-center justify-center cursor-pointer transition-colors"
+                      >
+                        <ZoomIn className="w-4 h-4" />
+                      </button>
                       {isSelected && (
                         <span className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-xl bg-[#06B8BE] text-white text-[11px] font-extrabold inline-flex items-center gap-1 shadow">
                           <Check className="w-3.5 h-3.5" />
@@ -248,7 +303,7 @@ export function Stage02VisualNovel({
                       <p className="font-extrabold text-sm text-[#26313B]">{styleCard.label}</p>
                       <p className="text-xs text-slate-500 mt-1 leading-snug">{styleCard.shortDescription}</p>
                     </div>
-                  </button>
+                  </div>
                 );
               })}
             </div>
@@ -285,10 +340,17 @@ export function Stage02VisualNovel({
                 </div>
               )}
 
-              <button
-                type="button"
+              <div
+                role="button"
+                tabIndex={0}
                 onClick={() => handleSelectElement('character')}
-                className={`absolute bottom-[25%] right-[10%] w-[24%] h-[62%] rounded-xl overflow-hidden transition-all cursor-pointer border-2 bg-white/95 ${
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleSelectElement('character');
+                  }
+                }}
+                className={`absolute bottom-[25%] right-[10%] w-[24%] h-[62%] rounded-xl overflow-hidden transition-all cursor-pointer border-2 bg-white/95 flex items-center justify-center ${
                   selectedId === 'character'
                     ? 'border-[#F4C914] scale-[1.03] shadow-lg'
                     : 'border-white/70 hover:border-[#F4C914]'
@@ -300,12 +362,27 @@ export function Stage02VisualNovel({
                   alt="Один персонаж на сцене"
                   fallbackTitle={currentStyleCard.label}
                   referrerPolicy="no-referrer"
-                  className="w-full h-full object-contain object-top p-1"
+                  className="max-h-full max-w-full w-auto h-auto object-contain object-center p-1"
                 />
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setZoomImage({
+                      src: currentStyleCard.imagePath,
+                      alt: `Персонаж · ${currentStyleCard.label}`,
+                      caption: currentStyleCard.shortDescription,
+                    });
+                  }}
+                  aria-label="Увеличить персонажа"
+                  className="absolute top-1 right-1 w-6 h-6 rounded-md bg-white/90 hover:bg-[#06B8BE] text-[#26313B] hover:text-white border border-slate-200 flex items-center justify-center cursor-pointer"
+                >
+                  <ZoomIn className="w-3 h-3" />
+                </button>
                 <span className="absolute bottom-1 left-1 right-1 bg-[#26313B]/90 text-white text-[10px] font-bold py-0.5 px-1.5 rounded text-center">
                   Персонаж PNG
                 </span>
-              </button>
+              </div>
 
               <div className="absolute top-[22%] left-4 sm:left-6 flex flex-col gap-2 max-w-[54%]">
                 <button
@@ -413,6 +490,14 @@ export function Stage02VisualNovel({
           </div>
         </div>
       )}
+
+      <ImageZoomModal
+        open={Boolean(zoomImage)}
+        src={zoomImage?.src || ''}
+        alt={zoomImage?.alt || ''}
+        caption={zoomImage?.caption}
+        onClose={() => setZoomImage(null)}
+      />
     </div>
   );
 }

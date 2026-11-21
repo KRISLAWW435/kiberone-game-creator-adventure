@@ -69,6 +69,16 @@ export function Stage09TestLab({ state, onUpdate, onUpdateChecklist }: Stage09Te
             );
           })}
         </div>
+
+        <div className="rounded-xl bg-cyan-50/70 border border-[#06B8BE]/35 px-3.5 py-2.5 text-xs font-bold text-[#26313B]">
+          {checkedCount === 0
+            ? '🔍 Запусти игру в PyCharm и отмечай каждый сработавший элемент — даже если найдутся баги, мы всё быстро починим!'
+            : checkedCount < 3
+            ? `💡 Отличное начало! Проверено ${checkedCount} из ${TEST_ITEMS.length} — отметь ещё немного, чтобы завершить проверку.`
+            : checkedCount < TEST_ITEMS.length
+            ? `🎉 Супер! Проверено ${checkedCount} из ${TEST_ITEMS.length} — игра уже уверенно работает!`
+            : '🚀 Вау! Все 9 пунктов проверены — твоя игра полностью готова к финалу!'}
+        </div>
       </section>
 
       {/* Right: Bug Fixing Workshop */}
