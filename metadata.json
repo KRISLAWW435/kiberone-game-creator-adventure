@@ -1,0 +1,6 @@
+{
+  "name": "KIBERONE VIBE CODING LAB",
+  "description": "Интерактивная цифровая мастерская для проведения 60-минутного занятия по созданию визуальной новеллы на Python с помощью нейросетей.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
